@@ -37,13 +37,13 @@
 team_t team = {
   /* Team name */
   "",
-  /* tyler paccione */
+  /* First member's full name */
   "",
-  /* typa3184@colorado.edu */
+  /* First member's email address */
   "",
-  /* jackson gothie */
+  /* Second member's full name (leave blank if none) */
   "",
-  /* jago6572@colorado.edu */
+  /* Second member's email address (leave blank if none) */
   ""
 };
 
@@ -140,6 +140,8 @@ int mm_init(void)
   //
   // You need to provide this
   //
+  mem_init();
+  heap_listp = heap
   return 0;
 }
 
@@ -149,9 +151,8 @@ int mm_init(void)
 //
 static void *extend_heap(uint32_t words) 
 {
-  //
-  // You need to provide this
-  //
+  void *endp = mem_sbrk(words*4);
+  coalesce(endp);
   return NULL;
 }
 
@@ -163,6 +164,7 @@ static void *extend_heap(uint32_t words)
 //
 static void *find_fit(uint32_t asize)
 {
+  for(int i =heap_listp; i<heap_listp+)
   return NULL; /* no fit */
 }
 
