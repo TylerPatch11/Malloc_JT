@@ -122,14 +122,7 @@ static inline void* PREV_BLKP(void *bp){
 
 static char *heap_listp;  /* pointer to first block */ 
 
-typedef struct Node{
-  int bsize;
-  int sizeCategory;
-  Node* prev;
-  Node* next;
-  Node* below;
-  Node* above;
-} Node;
+
 
 //
 // function prototypes for internal helper routines
@@ -146,13 +139,33 @@ static void checkblock(void *bp);
 //
 int mm_init(void) 
 {
-  char *mem_start;
-  if(mem_start = mem_sbrk(4) == -1){ //Sets address to beginnging of heap, returning false if mem_sbrk fails
-    return -1;
-  }
-  
-  heap_listp = mem_start;  //Initliaze heap_listp to new pointer to beginning of heap
-  return 0;
+  // Allocate 4 words of memory: 1 for alignment padding, 2 for prologue, 1 for epilogue
+    char *mem_start = mem_sbrk(4 * WSIZE);
+    if (mem_start == (void *)-1) {
+        return -1;
+    }
+
+    // Initialize the heap_listp to point to the start of the heap
+    heap_listp = mem_start;
+
+    // Set the alignment padding (first word)
+    PUT(heap_listp, 0);
+
+    // Set the prologue header (allocated block of size DSIZE)
+    PUT(heap_listp + WSIZE, PACK(DSIZE, 1));
+
+    // Set the prologue footer (allocated block of size DSIZE)
+    PUT(heap_listp + DSIZE, PACK(DSIZE, 1));
+
+    // Set the epilogue header (size 0, allocated)
+    PUT(heap_listp + DSIZE + WSIZE, PACK(0, 1));
+
+    // Extend the heap by CHUNKSIZE bytes
+    if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
+        return -1;
+    }
+
+    return 0;
 }
 
 
