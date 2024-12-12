@@ -63,6 +63,9 @@ team_t team = {
 static inline int MAX(int x, int y) {
   return x > y ? x : y;
 }
+static inline int MIN(int x, int y) {
+  return x < y ? x : y;
+}
 
 //
 // Pack a size and allocated bit into a word
@@ -212,7 +215,7 @@ static void *extend_heap(uint32_t words)
 //
 static void *find_fit(uint32_t asize)
 {
-  
+
   //
   //check for out of bounds conditions
   //
@@ -238,6 +241,11 @@ void mm_free(void *bp)
   //
   // You need to provide this
   //
+  int* HDptr = HDRP(bp);
+  int* Fptr = FTRP(bp);
+  *HDptr = *HDptr ^ 0x1;
+  *Fptr = *Fptr ^ 0x1;
+
 }
 
 //
@@ -269,6 +277,7 @@ void *mm_malloc(uint32_t size)
 //
 static void place(void *bp, uint32_t asize)
 {
+
 }
 
 
