@@ -260,6 +260,13 @@ void mm_free(void *bp)
 //
 static void *coalesce(void *bp) 
 {
+  uint32_t prevBlockSize = GET_SIZE(PREV_BLKP(HDRP(bp)));
+  uint32_t currBlockSize = GET_SIZE((void*)HDRP(bp));
+  uint32_t nextBlockSize = GET_SIZE(NEXT_BLKP(HDRP(bp)));
+  uint32_t prevAllocated = GET_ALLOC(HDRP(PREV_BLKP(bp)));
+  uint32_t nextAllocated = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+  uint32_t newSize;
+
   //
   // Case 1: No Adjacent Free Blocks (do nothing as they are already freed)
   //
@@ -267,6 +274,24 @@ static void *coalesce(void *bp)
   //
   // Case 2: Previous Block is Free so merge
   //
+  //write if statement
+  if(!prevAllocated){
+    newSize = prevBlockSize + currBlockSize;
+    PUT(HDRP(PREV_BLKP(bp)), PACK(newSize, 0));
+    PUT(FTRPxx(PREV_BLKP(bp)), PACK(newSize, 0));
+    return PREV_BLKP(bp);
+  }
+  else if(!nextAllocated){
+    newSize = nextBlockSize + currBlockSize;
+    PUT(HDRP(bp), PACK(newSize, 0));
+    PUT(FTRP(bp), PACK(newSize, 0)); 
+    return bp;
+  }
+  else if(!(GET_ALLOC(HDRP(NEXT_BLKP(bp)))) && !(GET_ALLOC(HDRP(PREV_BLKP(bp))))){
+    newSize = curr
+
+  }
+
 
   
 
