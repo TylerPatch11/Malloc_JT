@@ -245,10 +245,10 @@ void mm_free(void *bp)
   //
   int* HDptr = HDRP(bp);
   int* Fptr = FTRP(bp);
-  if(*HDptr & 0x1 == 1){
+  if((*HDptr & 0x1) == 1){
     *HDptr = *HDptr ^ 0x1;
   }
-  if(*Fptr & 0x1 ==1){
+  if((*Fptr & 0x1) ==1){
     *Fptr = *Fptr ^ 0x1;
   }
   coalesce(bp);
@@ -283,7 +283,7 @@ static void *coalesce(void *bp)
     //
     newSize = prevBlockSize + currBlockSize;
     PUT(HDRP(PREV_BLKP(bp)), PACK(newSize, 0));
-    PUT(FTRPxx(PREV_BLKP(bp)), PACK(newSize, 0));
+    PUT(FTRP(PREV_BLKP(bp)), PACK(newSize, 0));
     return PREV_BLKP(bp);
   }
   else if(!nextAllocated){
@@ -323,6 +323,7 @@ void *mm_malloc(uint32_t size)
   }
      //now that there IS space, place an allocated block in that new location
   place(fitFound,asize);
+  return fitFound;
 
 } 
 
