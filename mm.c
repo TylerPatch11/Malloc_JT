@@ -36,15 +36,15 @@
  ********************************************************/
 team_t team = {
   /* Team name */
-  "",
+  "jacksontyler",
   /* First member's full name */
-  "",
+  "Jackson Gothie",
   /* First member's email address */
-  "",
+  "jago6572@colorado.edu",
   /* Second member's full name (leave blank if none) */
-  "",
+  "Tyler Paccione",
   /* Second member's email address (leave blank if none) */
-  ""
+  "tyler.paccione@colorado.edu"
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,6 +66,16 @@ static inline int MAX(int x, int y) {
 static inline int MIN(int x, int y) {
   return x < y ? x : y;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Global Variables
+//
+
+static char *heap_listp;  /* pointer to first block */ 
+static char *curr_block;
+
+
 
 //
 // Pack a size and allocated bit into a word
@@ -140,14 +150,6 @@ static inline void* PREV_BLKP(void *bp){
   return prev;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Global Variables
-//
-
-static char *heap_listp;  /* pointer to first block */ 
-static char *curr_block;
-
 
 
 //
@@ -220,13 +222,13 @@ static void *find_fit(uint32_t asize)
   //check for out of bounds conditions
   //
 
-  for(int i = curr_block; i<mem_sbrk(0); i = NEXT_BLKP(i)){
-    if(!GET_ALLOC(i) && asize <= GET_SIZE(i)){
+  for(char* i = curr_block; i< (char*) mem_sbrk(0); i = NEXT_BLKP(i)){
+    if(!GET_ALLOC(i) && asize - DSIZE <= GET_SIZE(HDRP(i))){
       return i;
     }
   }
-  for(int i = heap_listp; i<curr_block; i = NEXT_BLKP(i)){
-    if(!GET_ALLOC(i) && asize <= GET_SIZE(i)){
+  for(char* i = heap_listp; i<curr_block; i = NEXT_BLKP(i)){
+    if(!GET_ALLOC(i) && asize - DSIZE <= GET_SIZE(HDRP(i))){
       return i;
     }
   }
@@ -243,8 +245,13 @@ void mm_free(void *bp)
   //
   int* HDptr = HDRP(bp);
   int* Fptr = FTRP(bp);
-  *HDptr = *HDptr ^ 0x1;
-  *Fptr = *Fptr ^ 0x1;
+  if(*HDptr & 0x1 == 1){
+    *HDptr = *HDptr ^ 0x1;
+  }
+  if(*Fptr & 0x1 ==1){
+    *Fptr = *Fptr ^ 0x1;
+  }
+  coalesce(bp);
 
 }
 
@@ -253,6 +260,16 @@ void mm_free(void *bp)
 //
 static void *coalesce(void *bp) 
 {
+  //
+  // Case 1: No Adjacent Free Blocks (do nothing as they are already freed)
+  //
+
+  //
+  // Case 2: Previous Block is Free so merge
+  //
+
+  
+
 
   return bp;
 }
@@ -265,7 +282,17 @@ void *mm_malloc(uint32_t size)
   //
   // You need to provide this
   //
-  return NULL;
+  if(size < 16){
+    return NULL;      //confirm request is atleast 16 bytes (minumun block size given in README)
+  }
+  void* fitFound = find_fit(size);
+
+  if(fitFound == NULL){
+    fitFound = extend_heap(size);    //no fit found, so extend the heap to be able to fit request
+  }
+     //now that there IS space, place an allocated block in that new location
+  place(fitFound,size);
+
 } 
 
 //
@@ -277,7 +304,20 @@ void *mm_malloc(uint32_t size)
 //
 static void place(void *bp, uint32_t asize)
 {
-
+  uint32_t blockSize = GET_SIZE(HDRP(bp));
+  
+  if(blockSize-asize >=16){
+    PUT(HDRP(bp), PACK(asize,1));
+    PUT(FTRP(bp), PACK(asize,1));
+    PUT(HDRP(NEXT_BLKP(bp)), PACK(asize-blockSize, 0));
+    PUT(FTRP(NEXT_BLKP(bp)), PACK(asize-blockSize, 0));
+    coalesce(NEXT_BLKP(bp));
+  }
+  else{
+    PUT(HDRP(bp), PACK(asize,1));
+    PUT(FTRP(bp), PACK(asize,1));
+  }
+  
 }
 
 
