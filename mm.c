@@ -108,11 +108,33 @@ static inline void *FTRP(void *bp) {
 // Given block ptr bp, compute address of next and previous blocks
 //
 static inline void *NEXT_BLKP(void *bp) {
-  return  ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)));
+  void *next = ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)));
+  
+  // Get the heap boundaries
+  void *heap_start = heap_listp;
+  void *heap_end = mem_sbrk(0);
+  
+  // Check if the calculated pointer is within heap boundaries
+  if (next < heap_start || next >= heap_end) {
+    return NULL;  // Out of bounds
+  }
+  
+  return next;
 }
 
 static inline void* PREV_BLKP(void *bp){
-  return  ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)));
+  void *prev = ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)));
+  
+  // Get the heap boundaries
+  void *heap_start = heap_listp;
+  void *heap_end = mem_sbrk(0);
+  
+  // Check if the calculated pointer is within heap boundaries
+  if (prev < heap_start || prev >= heap_end) {
+    return NULL;  // Out of bounds
+  }
+  
+  return prev;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,6 +143,7 @@ static inline void* PREV_BLKP(void *bp){
 //
 
 static char *heap_listp;  /* pointer to first block */ 
+static char *curr_block;
 
 
 
@@ -147,6 +170,7 @@ int mm_init(void)
 
     // Initialize the heap_listp to point to the start of the heap
     heap_listp = mem_start;
+    curr_block = heap_listp;
 
     // Set the alignment padding (first word)
     PUT(heap_listp, 0);
@@ -188,9 +212,20 @@ static void *extend_heap(uint32_t words)
 //
 static void *find_fit(uint32_t asize)
 {
-  void *endp = mem_sbrk(0);
-  for(char *i = heap_listp; i<endp; i = ((char *) (NEXT_BLKP(heap_listp)))){
-    exit(0);
+  
+  //
+  //check for out of bounds conditions
+  //
+
+  for(int i = curr_block; i<mem_sbrk(0); i = NEXT_BLKP(i)){
+    if(!GET_ALLOC(i) && asize <= GET_SIZE(i)){
+      return i;
+    }
+  }
+  for(int i = heap_listp; i<curr_block; i = NEXT_BLKP(i)){
+    if(!GET_ALLOC(i) && asize <= GET_SIZE(i)){
+      return i;
+    }
   }
   return NULL; /* no fit */
 }
@@ -210,6 +245,7 @@ void mm_free(void *bp)
 //
 static void *coalesce(void *bp) 
 {
+
   return bp;
 }
 
