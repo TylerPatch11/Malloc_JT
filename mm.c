@@ -267,29 +267,42 @@ static void *coalesce(void *bp)
   uint32_t nextAllocated = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
   uint32_t newSize;
 
-  //
-  // Case 1: No Adjacent Free Blocks (do nothing as they are already freed)
-  //
+  
 
-  //
-  // Case 2: Previous Block is Free so merge
-  //
+  
   //write if statement
-  if(!prevAllocated){
+  if(prevAllocated && nextAllocated){
+    //
+    // Case 1: No Adjacent Free Blocks (do nothing as they are already freed)
+    //
+    return bp;
+  }
+  else if(!prevAllocated){
+    //
+    // Case 2: Previous Block is Free so merge
+    //
     newSize = prevBlockSize + currBlockSize;
     PUT(HDRP(PREV_BLKP(bp)), PACK(newSize, 0));
     PUT(FTRPxx(PREV_BLKP(bp)), PACK(newSize, 0));
     return PREV_BLKP(bp);
   }
   else if(!nextAllocated){
+    //
+    // Case 3: Next Block is Free so merge
+    //
     newSize = nextBlockSize + currBlockSize;
     PUT(HDRP(bp), PACK(newSize, 0));
     PUT(FTRP(bp), PACK(newSize, 0)); 
     return bp;
   }
-  else if(!(GET_ALLOC(HDRP(NEXT_BLKP(bp)))) && !(GET_ALLOC(HDRP(PREV_BLKP(bp))))){
-    newSize = curr
-
+  else(!prevAllocated && !nextAllocated){
+    //
+    // Case 4: Previous and Next Block is Free so merge into one big block
+    //
+    newSize = currBlockSize + nextBlockSize + prevBlockSize;
+    PUT(HDRP(PREV_BLKP(bp)), PACK(newSize, 0));
+    PUT(FTRP(PREV_BLKP(bp)), PACK(newSize, 0));
+    return PREV_BLKP(bp);
   }
 
 
