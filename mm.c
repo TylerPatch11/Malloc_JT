@@ -120,7 +120,16 @@ static inline void* PREV_BLKP(void *bp){
 // Global Variables
 //
 
-static char *heap_listp;  /* pointer to first block */  
+static char *heap_listp;  /* pointer to first block */ 
+
+typedef struct Node{
+  int bsize;
+  int sizeCategory;
+  Node* prev;
+  Node* next;
+  Node* below;
+  Node* above;
+} Node;
 
 //
 // function prototypes for internal helper routines
@@ -137,11 +146,12 @@ static void checkblock(void *bp);
 //
 int mm_init(void) 
 {
-  //
-  // You need to provide this
-  //
-  mem_init();
-  heap_listp = heap
+  char *mem_start;
+  if(mem_start = mem_sbrk(4) == -1){ //Sets address to beginnging of heap, returning false if mem_sbrk fails
+    return -1;
+  }
+  
+  heap_listp = mem_start;  //Initliaze heap_listp to new pointer to beginning of heap
   return 0;
 }
 
@@ -157,6 +167,7 @@ static void *extend_heap(uint32_t words)
 }
 
 
+
 //
 // Practice problem 9.8
 //
@@ -164,7 +175,10 @@ static void *extend_heap(uint32_t words)
 //
 static void *find_fit(uint32_t asize)
 {
-  for(int i =heap_listp; i<heap_listp+)
+  void *endp = mem_sbrk(0);
+  for(char *i = heap_listp; i<endp; i = ((char *) (NEXT_BLKP(heap_listp)))){
+    exit(0);
+  }
   return NULL; /* no fit */
 }
 
