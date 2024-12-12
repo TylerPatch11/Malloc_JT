@@ -181,10 +181,10 @@ int mm_init(void)
     PUT(heap_listp, 0);
 
     // Set the prologue header (allocated block of size DSIZE)
-    PUT(heap_listp + WSIZE, PACK(DSIZE, 1));
+    PUT(heap_listp + WSIZE, PACK(0, 1));
 
     // Set the prologue footer (allocated block of size DSIZE)
-    PUT(heap_listp + DSIZE, PACK(DSIZE, 1));
+    PUT(heap_listp + DSIZE, PACK(0, 1));
 
     // Set the epilogue header (size 0, allocated)
     PUT(heap_listp + DSIZE + WSIZE, PACK(0, 1));
@@ -295,7 +295,7 @@ static void *coalesce(void *bp)
     PUT(FTRP(bp), PACK(newSize, 0)); 
     return bp;
   }
-  else(!prevAllocated && !nextAllocated){
+  else{
     //
     // Case 4: Previous and Next Block is Free so merge into one big block
     //
@@ -304,12 +304,6 @@ static void *coalesce(void *bp)
     PUT(FTRP(PREV_BLKP(bp)), PACK(newSize, 0));
     return PREV_BLKP(bp);
   }
-
-
-  
-
-
-  return bp;
 }
 
 //
