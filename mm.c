@@ -204,8 +204,8 @@ int mm_init(void)
 static void *extend_heap(uint32_t words) 
 {
   void *endp = mem_sbrk(words*4);
-  coalesce(endp);
-  return NULL;
+  void* newPtr = coalesce(endp);
+  return newPtr;
 }
 
 
@@ -311,19 +311,18 @@ static void *coalesce(void *bp)
 //
 void *mm_malloc(uint32_t size) 
 {
-  //
-  // You need to provide this
-  //
+  uint32_t asize = size + DSIZE;
+
   if(size < 16){
     return NULL;      //confirm request is atleast 16 bytes (minumun block size given in README)
   }
-  void* fitFound = find_fit(size);
+  void* fitFound = find_fit(asize);
 
   if(fitFound == NULL){
-    fitFound = extend_heap(size);    //no fit found, so extend the heap to be able to fit request
+    fitFound = extend_heap(asize/WSIZE);    //no fit found, so extend the heap to be able to fit request
   }
      //now that there IS space, place an allocated block in that new location
-  place(fitFound,size);
+  place(fitFound,asize);
 
 } 
 
